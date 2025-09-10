@@ -94,12 +94,12 @@ services:
       TASK_API_ENFORCE_HTTPS: false
       TASK_API_BASE_URL: http://relay:8080/link_connector_api
       TASK_API_USERNAME: demo1
-      TASK_API_PASSWORD: fYaAZIyjeSSk9ky9
+      TASK_API_PASSWORD: '*zdk%Q*ItPH!cHyf'
       TASK_API_TYPE:
       LOW_NUMBER_SUPPRESSION_THRESHOLD:
       ROUNDING_TARGET:
       POLLING_INTERVAL: 5
-      COLLECTION_ID: 01993599-f2d6-7a3c-b0a5-0cf78f878540
+      COLLECTION_ID: 019935d2-2c57-746e-92f9-457623d760c0
 
 volumes:
   pgdata:
