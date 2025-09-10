@@ -1,0 +1,105 @@
+name: hutch-relay
+
+services:
+  db:
+    image: postgres:16
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes: 
+      - pgdata:/var/lib/postgresql/data:Z
+      - ./init-scripts:/docker-entrypoint-initdb.d
+
+  adminer:
+    image: wodby/adminer
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - 9000:9000
+    environment:
+      ADMINER_DEFAULT_DB_DRIVER: pgsql
+      ADMINER_DEFAULT_DB_HOST: db
+      ADMINER_DESIGN: pepa-linha
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+
+  relay:
+#    build:
+#      dockerfile: app/Hutch.Relay/Dockerfile
+    image: ghcr.io/health-informatics-uon/hutch/relay:edge
+    restart: always
+    depends_on:
+      - rabbitmq
+      - db
+    ports:
+      - 8080:8080
+      - 8081:8081
+    environment:
+      Database__ApplyMigrationsOnStartup: true
+      DownstreamUsers__test__Password: testPassword
+      DownstreamUsers__test__SubNode: d7ea6f2a-ce2e-41d6-913a-a1ad2b6b88a9
+
+      DOTNET_Environment: Development
+      ConnectionStrings__Default: Server=db;Port=5432;Database=hutch_relay;User Id=postgres;Password=postgres
+      RelayTaskQueue__ConnectionString: amqp://user:password@rabbitmq:5672
+      Obfuscation__LowNumberSuppressionThreshold: 0
+      Obfuscation__RoundingTarget: 0
+
+      UpstreamTaskApi__BaseUrl: https://my-task-api.com
+      UpstreamTaskApi__CollectionId: dd52026b-5a61-4c89-b733-04ba141b3f31
+      UpstreamTaskApi__Username: user
+      UpstreamTaskApi__Password: password
+
+      Beacon__Enable: true
+
+  omop-lite:
+    image: ghcr.io/health-informatics-uon/omop-lite
+    depends_on:
+      - db
+    environment:
+      DB_PASSWORD: postgres
+      DB_NAME: hutch_omop
+      SYNTHETIC: true
+
+
+#  docker run ghcr.io/health-informatics-uon/hutch/relay --connection-string "Server=192.168.1.118;Port=5432;Database=hutch_relay;User Id=postgres;Password=postgres"  users add demo1
+
+  bunny:
+    image: ghcr.io/health-informatics-uon/hutch/bunny:edge
+    restart: always
+    depends_on:
+      - db
+      - relay
+      - rabbitmq
+    environment:
+      DATASOURCE_DB_USERNAME: postgres
+      DATASOURCE_DB_PASSWORD: postgres
+      DATASOURCE_DB_DATABASE: hutch_omop
+      DATASOURCE_DB_DRIVERNAME: postgresql
+      DATASOURCE_DB_SCHEMA: public
+      DATASOURCE_DB_PORT: 5432
+      DATASOURCE_DB_HOST: db
+      TASK_API_ENFORCE_HTTPS: false
+      TASK_API_BASE_URL: http://relay:8080/link_connector_api
+      TASK_API_USERNAME: demo1
+      TASK_API_PASSWORD: fYaAZIyjeSSk9ky9
+      TASK_API_TYPE:
+      LOW_NUMBER_SUPPRESSION_THRESHOLD:
+      ROUNDING_TARGET:
+      POLLING_INTERVAL: 5
+      COLLECTION_ID: 01993599-f2d6-7a3c-b0a5-0cf78f878540
+
+volumes:
+  pgdata:
