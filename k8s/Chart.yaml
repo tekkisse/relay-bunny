@@ -1,0 +1,7 @@
+# File: helm-chart/Chart.yaml
+apiVersion: v2
+name: hutch-relay
+description: A Helm chart for Hutch Relay application
+type: application
+version: 0.1.0
+appVersion: "latest"

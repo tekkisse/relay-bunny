@@ -1,0 +1,9 @@
+# File: helm-chart/templates/init-scripts-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hutch-relay.fullname" . }}-init-scripts
+data:
+  init.sql: |
+    CREATE DATABASE "hutch_relay";
+    CREATE DATABASE "hutch_omop";

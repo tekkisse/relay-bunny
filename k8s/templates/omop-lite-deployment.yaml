@@ -1,0 +1,39 @@
+# File: helm-chart/templates/omop-lite-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hutch-relay.fullname" . }}-omop-lite
+  labels:
+    app: omop-lite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: omop-lite
+  template:
+    metadata:
+      labels:
+        app: omop-lite
+    spec:
+      containers:
+      - name: omop-lite
+        image: {{ .Values.omop-lite.image }}
+        env:
+        - name: DB_PASSWORD
+          value: "{{ .Values.omop-lite.env.DB_PASSWORD }}"
+        - name: DB_NAME
+          value: "{{ .Values.omop-lite.env.DB_NAME }}"
+        - name: SYNTHETIC
+          value: "{{ .Values.omop-lite.env.SYNTHETIC }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: omop-lite
+spec:
+  selector:
+    app: omop-lite
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP

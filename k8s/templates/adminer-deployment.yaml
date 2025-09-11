@@ -1,0 +1,41 @@
+# File: helm-chart/templates/adminer-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hutch-relay.fullname" . }}-adminer
+  labels:
+    app: adminer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adminer
+  template:
+    metadata:
+      labels:
+        app: adminer
+    spec:
+      containers:
+      - name: adminer
+        image: {{ .Values.adminer.image }}
+        ports:
+        - containerPort: {{ .Values.adminer.servicePort }}
+        env:
+        - name: ADMINER_DEFAULT_DB_DRIVER
+          value: {{ .Values.adminer.env.ADMINER_DEFAULT_DB_DRIVER }}
+        - name: ADMINER_DEFAULT_DB_HOST
+          value: {{ .Values.adminer.env.ADMINER_DEFAULT_DB_HOST }}
+        - name: ADMINER_DESIGN
+          value: {{ .Values.adminer.env.ADMINER_DESIGN }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adminer
+spec:
+  selector:
+    app: adminer
+  ports:
+  - port: {{ .Values.adminer.servicePort }}
+    targetPort: {{ .Values.adminer.servicePort }}
+  type: ClusterIP

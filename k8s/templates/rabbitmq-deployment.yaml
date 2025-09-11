@@ -1,0 +1,42 @@
+# File: helm-chart/templates/rabbitmq-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hutch-relay.fullname" . }}-rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: {{ .Values.rabbitmq.image }}
+        ports:
+        - containerPort: {{ .Values.rabbitmq.servicePort }}
+        - containerPort: {{ .Values.rabbitmq.managementPort }}
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: {{ .Values.rabbitmq.env.RABBITMQ_DEFAULT_USER }}
+        - name: RABBITMQ_DEFAULT_PASS
+          value: {{ .Values.rabbitmq.env.RABBITMQ_DEFAULT_PASS }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+  - port: {{ .Values.rabbitmq.servicePort }}
+    targetPort: {{ .Values.rabbitmq.servicePort }}
+  - port: {{ .Values.rabbitmq.managementPort }}
+    targetPort: {{ .Values.rabbitmq.managementPort }}
+  type: ClusterIP

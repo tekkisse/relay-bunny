@@ -1,0 +1,71 @@
+# File: helm-chart/values.yaml
+db:
+  image: postgres:16
+  servicePort: 5432
+  env:
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+  persistence:
+    size: 10Gi
+
+adminer:
+  image: wodby/adminer
+  servicePort: 9000
+  env:
+    ADMINER_DEFAULT_DB_DRIVER: pgsql
+    ADMINER_DEFAULT_DB_HOST: db
+    ADMINER_DESIGN: pepa-linha
+
+rabbitmq:
+  image: rabbitmq:3-management
+  servicePort: 5672
+  managementPort: 15672
+  env:
+    RABBITMQ_DEFAULT_USER: user
+    RABBITMQ_DEFAULT_PASS: password
+
+relay:
+  image: ghcr.io/health-informatics-uon/hutch/relay:edge
+  relayServicePort: 8080
+  apiServicePort: 8081
+  env:
+    Database__ApplyMigrationsOnStartup: true
+    DownstreamUsers__test__Password: testPassword
+    DownstreamUsers__test__SubNode: d7ea6f2a-ce2e-41d6-913a-a1ad2b6b88a9
+    DOTNET_Environment: Development
+    ConnectionStrings__Default: Server=db;Port=5432;Database=hutch_relay;User Id=postgres;Password=postgres
+    RelayTaskQueue__ConnectionString: amqp://user:password@rabbitmq:5672
+    Obfuscation__LowNumberSuppressionThreshold: 0
+    Obfuscation__RoundingTarget: 0
+    UpstreamTaskApi__BaseUrl: https://my-task-api.com
+    UpstreamTaskApi__CollectionId: dd52026b-5a61-4c89-b733-04ba141b3f31
+    UpstreamTaskApi__Username: user
+    UpstreamTaskApi__Password: password
+    Beacon__Enable: true
+
+omop-lite:
+  image: ghcr.io/health-informatics-uon/omop-lite
+  env:
+    DB_PASSWORD: postgres
+    DB_NAME: hutch_omop
+    SYNTHETIC: true
+
+bunny:
+  image: ghcr.io/health-informatics-uon/hutch/bunny:edge
+  env:
+    DATASOURCE_DB_USERNAME: postgres
+    DATASOURCE_DB_PASSWORD: postgres
+    DATASOURCE_DB_DATABASE: hutch_omop
+    DATASOURCE_DB_DRIVERNAME: postgresql
+    DATASOURCE_DB_SCHEMA: public
+    DATASOURCE_DB_PORT: 5432
+    DATASOURCE_DB_HOST: db
+    TASK_API_ENFORCE_HTTPS: false
+    TASK_API_BASE_URL: http://relay:8080/link_connector_api
+    TASK_API_USERNAME: demo1
+    TASK_API_PASSWORD: '*zdk%Q*ItPH!cHyf'
+    TASK_API_TYPE:
+    LOW_NUMBER_SUPPRESSION_THRESHOLD:
+    ROUNDING_TARGET:
+    POLLING_INTERVAL: 5
+    COLLECTION_ID: 019935d2-2c57-746e-92f9-457623d760c0

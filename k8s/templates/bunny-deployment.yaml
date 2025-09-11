@@ -1,0 +1,65 @@
+# File: helm-chart/templates/bunny-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hutch-relay.fullname" . }}-bunny
+  labels:
+    app: bunny
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bunny
+  template:
+    metadata:
+      labels:
+        app: bunny
+    spec:
+      containers:
+      - name: bunny
+        image: {{ .Values.bunny.image }}
+        env:
+        - name: DATASOURCE_DB_USERNAME
+          value: "{{ .Values.bunny.env.DATASOURCE_DB_USERNAME }}"
+        - name: DATASOURCE_DB_PASSWORD
+          value: "{{ .Values.bunny.env.DATASOURCE_DB_PASSWORD }}"
+        - name: DATASOURCE_DB_DATABASE
+          value: "{{ .Values.bunny.env.DATASOURCE_DB_DATABASE }}"
+        - name: DATASOURCE_DB_DRIVERNAME
+          value: "{{ .Values.bunny.env.DATASOURCE_DB_DRIVERNAME }}"
+        - name: DATASOURCE_DB_SCHEMA
+          value: "{{ .Values.bunny.env.DATASOURCE_DB_SCHEMA }}"
+        - name: DATASOURCE_DB_PORT
+          value: "{{ .Values.bunny.env.DATASOURCE_DB_PORT }}"
+        - name: DATASOURCE_DB_HOST
+          value: "{{ .Values.bunny.env.DATASOURCE_DB_HOST }}"
+        - name: TASK_API_ENFORCE_HTTPS
+          value: "{{ .Values.bunny.env.TASK_API_ENFORCE_HTTPS }}"
+        - name: TASK_API_BASE_URL
+          value: "{{ .Values.bunny.env.TASK_API_BASE_URL }}"
+        - name: TASK_API_USERNAME
+          value: "{{ .Values.bunny.env.TASK_API_USERNAME }}"
+        - name: TASK_API_PASSWORD
+          value: "{{ .Values.bunny.env.TASK_API_PASSWORD }}"
+        - name: TASK_API_TYPE
+          value: "{{ .Values.bunny.env.TASK_API_TYPE }}"
+        - name: LOW_NUMBER_SUPPRESSION_THRESHOLD
+          value: "{{ .Values.bunny.env.LOW_NUMBER_SUPPRESSION_THRESHOLD }}"
+        - name: ROUNDING_TARGET
+          value: "{{ .Values.bunny.env.ROUNDING_TARGET }}"
+        - name: POLLING_INTERVAL
+          value: "{{ .Values.bunny.env.POLLING_INTERVAL }}"
+        - name: COLLECTION_ID
+          value: "{{ .Values.bunny.env.COLLECTION_ID }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bunny
+spec:
+  selector:
+    app: bunny
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP

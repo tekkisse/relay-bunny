@@ -1,0 +1,64 @@
+# File: helm-chart/templates/relay-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hutch-relay.fullname" . }}-relay
+  labels:
+    app: relay
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: relay
+  template:
+    metadata:
+      labels:
+        app: relay
+    spec:
+      containers:
+      - name: relay
+        image: {{ .Values.relay.image }}
+        ports:
+        - containerPort: {{ .Values.relay.relayServicePort }}
+        - containerPort: {{ .Values.relay.apiServicePort }}
+        env:
+        - name: Database__ApplyMigrationsOnStartup
+          value: "{{ .Values.relay.env.Database__ApplyMigrationsOnStartup }}"
+        - name: DownstreamUsers__test__Password
+          value: "{{ .Values.relay.env.DownstreamUsers__test__Password }}"
+        - name: DownstreamUsers__test__SubNode
+          value: "{{ .Values.relay.env.DownstreamUsers__test__SubNode }}"
+        - name: DOTNET_Environment
+          value: "{{ .Values.relay.env.DOTNET_Environment }}"
+        - name: ConnectionStrings__Default
+          value: "{{ .Values.relay.env.ConnectionStrings__Default }}"
+        - name: RelayTaskQueue__ConnectionString
+          value: "{{ .Values.relay.env.RelayTaskQueue__ConnectionString }}"
+        - name: Obfuscation__LowNumberSuppressionThreshold
+          value: "{{ .Values.relay.env.Obfuscation__LowNumberSuppressionThreshold }}"
+        - name: Obfuscation__RoundingTarget
+          value: "{{ .Values.relay.env.Obfuscation__RoundingTarget }}"
+        - name: UpstreamTaskApi__BaseUrl
+          value: "{{ .Values.relay.env.UpstreamTaskApi__BaseUrl }}"
+        - name: UpstreamTaskApi__CollectionId
+          value: "{{ .Values.relay.env.UpstreamTaskApi__CollectionId }}"
+        - name: UpstreamTaskApi__Username
+          value: "{{ .Values.relay.env.UpstreamTaskApi__Username }}"
+        - name: UpstreamTaskApi__Password
+          value: "{{ .Values.relay.env.UpstreamTaskApi__Password }}"
+        - name: Beacon__Enable
+          value: "{{ .Values.relay.env.Beacon__Enable }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: relay
+spec:
+  selector:
+    app: relay
+  ports:
+  - port: {{ .Values.relay.relayServicePort }}
+    targetPort: {{ .Values.relay.relayServicePort }}
+  - port: {{ .Values.relay.apiServicePort }}
+    targetPort: {{ .Values.relay.apiServicePort }}
+  type: ClusterIP
